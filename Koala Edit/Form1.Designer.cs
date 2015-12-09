@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.textBoxInput = new System.Windows.Forms.TextBox();
             this.button1 = new System.Windows.Forms.Button();
             this.textBoxOutput = new System.Windows.Forms.TextBox();
@@ -35,12 +36,13 @@
             // 
             // textBoxInput
             // 
+            this.textBoxInput.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxInput.Location = new System.Drawing.Point(66, 34);
             this.textBoxInput.Multiline = true;
             this.textBoxInput.Name = "textBoxInput";
             this.textBoxInput.Size = new System.Drawing.Size(500, 208);
             this.textBoxInput.TabIndex = 0;
-            this.textBoxInput.Text = "Load the Images found in \"c:\\users\\\", Store this as myImages.";
+            this.textBoxInput.Text = resources.GetString("textBoxInput.Text");
             // 
             // button1
             // 
@@ -70,6 +72,7 @@
             this.Controls.Add(this.textBoxInput);
             this.Name = "Form1";
             this.Text = "Form1";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
