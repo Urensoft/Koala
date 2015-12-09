@@ -1,3 +1,3 @@
 # Koala
-An extremely simple English based programming language
+An extremely easy English based programming language
 
