@@ -1,0 +1,5 @@
+Y:\_git\Koala\ClassLibrary1\obj\Debug\Koala.csprojResolveAssemblyReference.cache
+Y:\_git\Koala\Compiled\KoalaFramework.dll
+Y:\_git\Koala\Compiled\KoalaFramework.pdb
+Y:\_git\Koala\ClassLibrary1\obj\Debug\KoalaFramework.dll
+Y:\_git\Koala\ClassLibrary1\obj\Debug\KoalaFramework.pdb
