@@ -120,7 +120,7 @@
   <data name="textBoxInput.Text" xml:space="preserve">
     <value>Load the Image found in "C:\Users\Urens\Downloads\valid.png", Store this as test.
 print out location of test, 
-with test, get the bytes which are (less than 200 and greater than 50),
+with test, get the bytes which are: less than 200 and greater than 50,
 put this into a new image, save this to "C:\Users\Urens\Pictures\test.png". </value>
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />

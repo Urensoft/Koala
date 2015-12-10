@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.IO;
-
+using System.Reflection;
 namespace Koala
 {
     namespace DataTypes
@@ -13,6 +13,55 @@ namespace Koala
 
         public class Convert
         {
+
+            public static string objectToString(kData obj)
+            {
+                string results = obj.GetType().Name+ " {\n";
+
+                foreach (FieldInfo f in obj.GetType().GetFields().ToList())
+                {
+                    object val = f.GetValue(obj);
+                    results += String.Format("\t{0}={1},\n", f.Name, val );
+                    if (f.FieldType.IsArray)
+                    {
+                        if (f.FieldType == typeof(byte[]))
+                        {
+                            byte[] b = (byte[])val;
+                            results += String.Format("\t{0}={1},\n", f.Name + ".length", b.Length);
+                        }
+
+                    } 
+
+
+                    // do stuff here
+                }
+                return results+"}\n";
+            }
+
+
+            public static string propertyOfObjectToString(string property, kData obj)
+            {
+                if (obj is Image)
+                {
+                    Image img = (Image)obj;
+
+                    switch (property)
+                    {
+                        case "width":   return img.width.ToString();
+                        case "height":  return img.height.ToString();
+                    }
+                }
+
+                switch (property)
+                {
+                    case "location":    return obj.location;
+                    case "bytes":       return System.Text.Encoding.UTF8.GetString(obj.bytes, 0, obj.bytes.Length);
+                }
+
+                Koala.Error.raiseException("Unknown property " + property);
+                return null;
+
+            }
             public static string stringToPath(string a)
             {
                 return a.Substring(1, a.Length - 3);
@@ -34,11 +83,11 @@ namespace Koala
                 switch (type)
                 {
                     case "file":    return new DataTypes.File();
-                    case "files":   return new DataTypes.FileSet();     break;
-                    case "image":   return new DataTypes.Image();       break;
-                    case "images":  return new DataTypes.ImageSet();    break;
-                    case "video":   return new DataTypes.Video();       break;
-                    case "videos":  return new DataTypes.VideoSet();    break;
+                    case "files":   return new DataTypes.FileSet();     
+                    case "image":   return new DataTypes.Image();
+                    case "images":  return new DataTypes.ImageSet();
+                    case "video":   return new DataTypes.Video();   
+                    case "videos":  return new DataTypes.VideoSet();    
                 }
 
                 Koala.Error.raiseException("Invalid DataType Specified");
@@ -51,7 +100,6 @@ namespace Koala
         }
         public class kData
         {
-            public FileStream dataStream;
             public string name;
             public string location;
             public bool isDirectory;
@@ -133,12 +181,12 @@ namespace Koala
 
         public class Number : kData
         {
-            public UInt64 UnsignedLongValue
+            public UInt64 IntegerValue
             {
                 get;
                 set;
             }
-            public double DoubleValue
+            public double DecimalValue
             {
                 get;
                 set;

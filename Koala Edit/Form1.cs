@@ -34,7 +34,7 @@ namespace Koala_Edit
             }
             catch(Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine("Error on line "+Error.currentLineNumber+": " + ex.Message);
             }
             
 

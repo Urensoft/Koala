@@ -22,22 +22,21 @@ namespace Koala
 
         public Dictionary<string, Regex> parseList = new Dictionary<string, Regex>()
         {
-            {   "loadStatement"     , new Regex("load the .+ found (in|at) \".+\"(,|.)",RegexOptions.IgnoreCase)                    },
-            {   "storeStatement"    , new Regex(@"store (this|these|them|those) as .+(,|.)",RegexOptions.IgnoreCase)                },
-            {   "repeatStatement"   , new Regex(@"repeat \d+ (time|times)(,|.)",RegexOptions.IgnoreCase)                            },
-            {   "withStatement"     , new Regex(@"with .+,",RegexOptions.IgnoreCase)                                                },
-            {   "printStatement"    , new Regex(@"print out .+ of .+,",RegexOptions.IgnoreCase)                                     },
+            {   "loadStatement"     , new Regex("load the .+ found (in|at) \".+\"(\\,|\\.)",RegexOptions.IgnoreCase)                    },
+            {   "storeStatement"    , new Regex(@"store (this|these|them|those) as .+(\,|\.)",RegexOptions.IgnoreCase)                },
+            {   "repeatStatement"   , new Regex(@"repeat \d+ (time|times)(\,|\.)",RegexOptions.IgnoreCase)                            },
+            {   "withStatement"     , new Regex(@"with .+\,",RegexOptions.IgnoreCase)                                                },
+            {   "printStatement"    , new Regex(@"print out .+\,",RegexOptions.IgnoreCase)                                           },
             {   "createStatement"   , new Regex(@"create (the|an|a) (integer|number|string|variable) ,",RegexOptions.IgnoreCase)    },
-            {   "saveStatement"     , new Regex("save .+ to \".+\"(,|.)",RegexOptions.IgnoreCase)    },
+            {   "saveStatement"     , new Regex("save .+ to \".+\"(\\,|\\.)",RegexOptions.IgnoreCase)                                   },
 
             //image
-            {   "getStatement"      , new Regex(@"get the .+ which (are|is) .+(,|.)",RegexOptions.IgnoreCase)    },
-            {   "whichStatement"      , new Regex(@"white are .+ which (are|is) .+(,|.)",RegexOptions.IgnoreCase)    },
-
-
-
+            {   "getStatement"      , new Regex(@"get the .+ which (are|is) .+(\,|\.)",RegexOptions.IgnoreCase)    },
+            {   "whichStatement"      , new Regex(@"which (are|is): .+(\,|\.)",RegexOptions.IgnoreCase)    },
 
         };
+
+        List<string> qualifiers = new List<string>();
 
 
         string[] logicStatements = new string[] {   "load the [object] found in [filepath],",
@@ -50,6 +49,7 @@ namespace Koala
 
         public void loadBytesForDataType(DataTypes.kData obj)
         {
+            
             FileAttributes attr = System.IO.File.GetAttributes(obj.location);
             if (attr.HasFlag(FileAttributes.Directory))
             {
@@ -69,13 +69,25 @@ namespace Koala
 
         public void setQualifier(string s)
         {
-
-
+            Regex r = new Regex(@"(and|,)", RegexOptions.IgnoreCase);
+            string[] list = r.Split(s);
         }
 
         public bool valuePassesQualifier()
         {
-            return true;
+
+            if (qualifiers.Count == 0) return true;
+            else
+            {
+                foreach (string q in qualifiers)
+                {
+
+
+                }
+
+                return true;
+
+            }
         }
 
         public kData getThe(string property, kData obj,bool evaluate)
@@ -100,10 +112,7 @@ namespace Koala
                         }
                     }
                     
-
                     return newData;
-
-                break;
             }
 
 
@@ -139,18 +148,78 @@ namespace Koala
 
         }
 
-        public void printOut(string property,kData obj)
+        public string[] findProperties(string s)
+        {
+            Regex propertyRx = new Regex(@"[^ ]+ of [^ \,\.]+[^ \,\.]", RegexOptions.IgnoreCase);
+            Regex varRx = new Regex(@"(( and)|\,) [^ \,]+", RegexOptions.IgnoreCase);
+
+
+            List<string> found          = new List<string>();
+            string filtered             = Regex.Replace(s, @"(print out )","",RegexOptions.IgnoreCase);
+            MatchCollection pmc         = propertyRx.Matches(filtered);
+            MatchCollection vmc         = varRx.Matches(filtered);
+
+            if (filtered.IndexOf(" ") < 0) found.Add(filtered.Replace(",", ""));
+
+            foreach (Match m in pmc)
+            {
+                found.Add(m.Value);
+            }
+            foreach (Match m in vmc)
+            {
+                string variable = Regex.Replace(m.Value, @"(( and )|\,|\.)", "", RegexOptions.IgnoreCase);
+                found.Add(variable);
+            }
+            return found.ToArray();
+
+        }
+
+        public void printOut(string[] values)
         {
 
 
-            switch (property)
+            foreach(string value in values)
             {
-                case "location":
-                    Console.WriteLine(obj.location);
-                    break;
+                int ofIndex     = value.IndexOf("of", StringComparison.OrdinalIgnoreCase);
+                string objName  = null;
+                string property = null;
+
+                if (ofIndex >= 0)    // split into property and name
+                {
+                    property        = value.Substring(0, ofIndex).Replace(" ","");
+                    objName         = value.Substring(ofIndex + 2, value.Length - ofIndex - 2).Replace(" ", "");
+                }
+                else
+                {                       // just name of variable
+                    objName = value.Replace(" ", "");             
+                }
+
+                if (memory.ContainsKey(objName))
+                {
+                    if (String.IsNullOrEmpty(property)) // is variable but no property specified, should print overview
+                    {
+                        Console.WriteLine(DataTypes.Convert.objectToString(memory[objName]));
+                    }
+                    else
+                    {
+                        Console.WriteLine(DataTypes.Convert.propertyOfObjectToString(property.ToLower(), memory[objName]));
+                    }
+
+                }
+                else
+                {
+                    if (String.IsNullOrEmpty(property)) // not a property and not a variable, static text to be printed
+                    {
+                        Console.WriteLine(objName);
+                    }
+                    else
+                    {
+                        Koala.Error.raiseException(objName + " does not contain the property of " + property);
+                    }
+
+                }
             }
-
-
+           
         }
 
         // FILE IO

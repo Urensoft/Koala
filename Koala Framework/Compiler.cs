@@ -8,8 +8,6 @@ using System.Text.RegularExpressions;
 
 namespace Koala
 {
-
-
     public class Compiler
     {
 
@@ -21,10 +19,10 @@ namespace Koala
 
         public void execute(string[] input)
         {
-            int lineNumber = 0;
+            Koala.Error.currentLineNumber = 0;
             foreach( string line in input)
             {
-                lineNumber++;
+                Koala.Error.currentLineNumber++;
                 foreach (KeyValuePair<string,Regex> logicCombo in klogic.parseList )
                 {
                     Match m = logicCombo.Value.Match(line);
@@ -64,13 +62,14 @@ namespace Koala
                                 break;
 
                             case "printStatement":
-                                string property     = values[2];
-                                string name         = values[4].Replace(",", "").Replace(".", "");
-                                DataTypes.kData val = klogic.memory[name];
-                                klogic.printOut(property, val);
+                                string[] properties = klogic.findProperties(m.Value);
+                                klogic.printOut(properties);
+
                                 break;
 
                             case "getStatement":
+
+                                handleWhichQualifier(m.Value);
                                 param1 = values[2];
                                 //klogic.getThe(param1, varRefStack.Pop());
                                 currentRef = klogic.getThe(param1, currentRef,true);
@@ -97,6 +96,14 @@ namespace Koala
             
         }
         
+        public void handleWhichQualifier(string q)
+        {
+            Regex r = klogic.parseList["whichStatement"];
 
+            Match m = r.Match(q);
+            if (!String.IsNullOrEmpty(m.Value)) klogic.setQualifier(m.Value); 
+            
+
+        }
     }
 }
