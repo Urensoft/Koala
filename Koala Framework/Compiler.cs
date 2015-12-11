@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
-
 namespace Koala
 {
     public class Compiler
@@ -101,7 +100,11 @@ namespace Koala
             Regex r = klogic.parseList["whichStatement"];
 
             Match m = r.Match(q);
-            if (!String.IsNullOrEmpty(m.Value)) klogic.setQualifier(m.Value); 
+            if (!String.IsNullOrEmpty(m.Value))
+            {
+                string qualifier = m.Value.Split(':')[1];
+                klogic.setQualifier(qualifier);
+            }
             
 
         }

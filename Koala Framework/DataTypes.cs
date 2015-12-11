@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Reflection;
+using System.Drawing;
+
 namespace Koala
 {
     namespace DataTypes
@@ -21,13 +23,13 @@ namespace Koala
                 foreach (FieldInfo f in obj.GetType().GetFields().ToList())
                 {
                     object val = f.GetValue(obj);
-                    results += String.Format("\t{0}={1},\n", f.Name, val );
+                    results += String.Format("{0}={1},\n", f.Name, val );
                     if (f.FieldType.IsArray)
                     {
                         if (f.FieldType == typeof(byte[]))
                         {
                             byte[] b = (byte[])val;
-                            results += String.Format("\t{0}={1},\n", f.Name + ".length", b.Length);
+                            results += String.Format("{0}={1},\n", f.Name + ".length", b.Length);
                         }
 
                     } 
@@ -115,7 +117,7 @@ namespace Koala
 
 
 
-            }
+        }
 
 
         public class Video : kData
@@ -129,34 +131,20 @@ namespace Koala
 
         public class Image : kData
         {
-            public UInt32 height;
-            public UInt32 width;
-
-
-
-            public byte[] lookAtPixel(UInt32 x, UInt32 y)
+            public Image()
             {
-                byte[] pixel = new byte[4];
-
-                try
-                {
-                    UInt64 index = (y * width) + x;
-
-                    pixel[0] = bytes[index];
-                    pixel[1] = bytes[index + 1];
-                    pixel[2] = bytes[index + 2];
-                    pixel[3] = bytes[index + 3];
-
-                }
-                catch
-                {
-                    Koala.Error.raiseException("X or Y outside of Image Bounds");
-                }
-
-                return pixel;
-
 
             }
+            public Image(Bitmap b)
+            {
+                bmpRepresentation   = b;
+                height  = (UInt32)b.Height;
+                width   = (UInt32)b.Width;
+
+            }
+            public Bitmap bmpRepresentation;
+            public UInt32 height;
+            public UInt32 width;
 
 
         }
@@ -181,20 +169,44 @@ namespace Koala
 
         public class Number : kData
         {
-            public UInt64 IntegerValue
+
+            public Number(object d)
             {
-                get;
-                set;
+
+                Value = d;
             }
-            public double DecimalValue
+
+            object Value;
+
+
+            public bool isGreaterThan(Number num2)
             {
-                get;
-                set;
+                if (num2.Value.GetType() == typeof(double) && Value.GetType() == typeof(double))        return ((double)num2.Value < (double)Value);
+                else if (num2.Value.GetType() == typeof(double) && Value.GetType() == typeof(long))     return ((double)num2.Value < (long)Value);
+                else if (num2.Value.GetType() == typeof(long) && Value.GetType() == typeof(double))     return ((long)num2.Value < (double)Value);
+                else                                                                                    return ((long)num2.Value < (long)Value);
             }
+
+            public bool isLessThan(Number num2)
+            {
+                if (num2.Value.GetType() == typeof(double) && Value.GetType() == typeof(double))        return ((double)num2.Value > (double)Value);
+                else if (num2.Value.GetType() == typeof(double) && Value.GetType() == typeof(long))     return ((double)num2.Value > (long)Value);
+                else if (num2.Value.GetType() == typeof(long) && Value.GetType() == typeof(double))     return ((long)num2.Value > (double)Value);
+                else                                                                                    return ((long)num2.Value > (long)Value);
+            }
+
+            public bool isEqualTo(Number num2)
+            {
+                if (num2.Value.GetType() == typeof(double) && Value.GetType() == typeof(double))        return ((double)num2.Value == (double)Value);
+                else if (num2.Value.GetType() == typeof(double) && Value.GetType() == typeof(long))     return ((double)num2.Value == (long)Value);
+                else if (num2.Value.GetType() == typeof(long) && Value.GetType() == typeof(double))     return ((long)num2.Value == (double)Value);
+                else                                                                                    return ((long)num2.Value == (long)Value);
+            }
+
 
         }
 
-
     }
+
 }
 

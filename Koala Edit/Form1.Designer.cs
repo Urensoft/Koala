@@ -42,7 +42,8 @@
             this.textBoxInput.Name = "textBoxInput";
             this.textBoxInput.Size = new System.Drawing.Size(500, 208);
             this.textBoxInput.TabIndex = 0;
-            this.textBoxInput.Text = resources.GetString("textBoxInput.Text");
+            //this.textBoxInput.Text = resources.GetString("textBoxInput.Text");
+            this.textBoxInput.Text =Properties.Resources.Demo;
             // 
             // button1
             // 
