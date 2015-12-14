@@ -18,12 +18,12 @@ namespace Koala
 
             public static string objectToString(kData obj)
             {
-                string results = obj.GetType().Name+ " {\n";
+                string results = obj.GetType().Name + " {\n";
 
                 foreach (FieldInfo f in obj.GetType().GetFields().ToList())
                 {
                     object val = f.GetValue(obj);
-                    results += String.Format("{0}={1},\n", f.Name, val );
+                    results += String.Format("{0}={1},\n", f.Name, val);
                     if (f.FieldType.IsArray)
                     {
                         if (f.FieldType == typeof(byte[]))
@@ -32,12 +32,12 @@ namespace Koala
                             results += String.Format("{0}={1},\n", f.Name + ".length", b.Length);
                         }
 
-                    } 
+                    }
 
 
                     // do stuff here
                 }
-                return results+"}\n";
+                return results + "}\n";
             }
 
 
@@ -49,21 +49,45 @@ namespace Koala
 
                     switch (property)
                     {
-                        case "width":   return img.width.ToString();
-                        case "height":  return img.height.ToString();
+                        case "width": return img.width.ToString();
+                        case "height": return img.height.ToString();
                     }
                 }
 
                 switch (property)
                 {
-                    case "location":    return obj.location;
-                    case "bytes":       return System.Text.Encoding.UTF8.GetString(obj.bytes, 0, obj.bytes.Length);
+                    case "location": return obj.location;
+                    case "bytes": return System.Text.Encoding.UTF8.GetString(obj.bytes, 0, obj.bytes.Length);
                 }
 
                 Koala.Error.raiseException("Unknown property " + property);
                 return null;
 
             }
+
+
+            public static object stringToObject(string a)
+            {
+                double retDouble;
+                long retLong;
+                bool found1 = false;
+
+                object[] values = new object[2];
+
+                if (a.Contains('.'))
+                {
+                    found1 = double.TryParse(a, System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retDouble);
+                    if (found1) return retDouble;
+                    else        return null;
+                }
+                else
+                {
+                    found1 = long.TryParse(a, System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retLong);
+                    if (found1) return retLong;
+                    else        return null;
+                }
+            }
+
             public static string stringToPath(string a)
             {
                 return a.Substring(1, a.Length - 3);
@@ -78,18 +102,68 @@ namespace Koala
             }
 
 
+            public static object[] convertStringsToValues(string[] s, ref Dictionary<string,kData> mem, ref Dictionary<string,object> pmem)
+            {
+                object[] values = new object[2];
+
+                values[0] = stringToObject(s[0]);
+                values[1] = stringToObject(s[1]);
+
+
+                kData res;
+                object outObj;
+                // CHECK FOR PRONUMERALS 
+                if (values[0] == null)
+                {
+                    if(pmem.TryGetValue(s[0],out outObj))
+                    {
+                        values[0] = outObj;
+                    }
+                    else if(mem.TryGetValue(s[0], out res))
+                    {
+
+                    }
+                    else
+                    {
+                        Koala.Error.raiseException("Unknown value " + s[0]);
+                    }
+                }
+
+                if (values[1] == null)
+                {
+                    if (pmem.TryGetValue(s[1], out outObj))
+                    {
+                        values[1] = outObj;
+                    }
+                    else if (mem.TryGetValue(s[1], out res))
+                    {
+
+                    }
+                    else
+                    {
+                        Koala.Error.raiseException("unknown value " + s[1]);
+                    }
+                }
+
+
+
+                return values;
+            }
+
+
+
 
             public static kData stringToDataType(string a)
             {
                 string type = a.ToLower();
                 switch (type)
                 {
-                    case "file":    return new DataTypes.File();
-                    case "files":   return new DataTypes.FileSet();     
-                    case "image":   return new DataTypes.Image();
-                    case "images":  return new DataTypes.ImageSet();
-                    case "video":   return new DataTypes.Video();   
-                    case "videos":  return new DataTypes.VideoSet();    
+                    case "file": return new DataTypes.File();
+                    case "files": return new DataTypes.FileSet();
+                    case "image": return new DataTypes.Image();
+                    case "images": return new DataTypes.ImageSet();
+                    case "video": return new DataTypes.Video();
+                    case "videos": return new DataTypes.VideoSet();
                 }
 
                 Koala.Error.raiseException("Invalid DataType Specified");
@@ -98,6 +172,20 @@ namespace Koala
 
             }
 
+
+        }
+
+    
+
+        public class kFunction{
+
+            public string name
+            {
+                set;
+                get;
+            }
+
+            public List<string> expressions = new List<string>();
 
         }
         public class kData

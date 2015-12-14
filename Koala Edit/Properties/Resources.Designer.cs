@@ -63,7 +63,11 @@ namespace Koala_Edit.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Load the Image found in &quot;C:\Users\Urens\Pictures\test.jpg&quot;, Store this as test.
         ///print out location of test, 
-        ///with test, get the pixels which are: less than 256 and greater than 128,
+        ///define the function grayScale as:
+        ///f(r) = (r+g+b)/3,
+        ///f(g)= r,
+        ///f(b)= r,
+        ///with test, perform the function grayScale on pixels,
         ///put this into a new image, save this to &quot;C:\Users\Urens\Pictures\test.png&quot;..
         /// </summary>
         internal static string Demo {

@@ -10,17 +10,21 @@ namespace Koala
     public class Compiler
     {
 
-        Koala.Logic klogic               = new Koala.Logic();
+        public Koala.Logic klogic               = new Koala.Logic();
         private Queue<Task>     runQueue = new Queue<Task>();
         private Stack<DataTypes.kData> varRefStack = new Stack<DataTypes.kData>();
         private DataTypes.kData currentRef = null;
 
+        public string currentTask = "";
 
         public void execute(string[] input)
         {
             Koala.Error.currentLineNumber = 0;
+            klogic.scanForFunctions(input);
             foreach( string line in input)
             {
+                klogic.taskProgress = 0;
+
                 Koala.Error.currentLineNumber++;
                 foreach (KeyValuePair<string,Regex> logicCombo in klogic.parseList )
                 {
@@ -80,6 +84,17 @@ namespace Koala
                                 param2  = DataTypes.Convert.stringToPath( values[3] ); 
                                 if(param1 == "this")    klogic.saveToFile(param2, currentRef);
                                 else                    klogic.saveToFile(param2, klogic.memory[param2]);
+
+                                break;
+                            case "performStatement":
+                                string name     = values[3];
+                                currentTask = "Performing function " + name;
+
+                                string property = "";
+                                Match res       = new Regex(" on [^ ]+,",RegexOptions.IgnoreCase).Match(m.Value);
+                                if(res.Success) property = res.Value.Substring(4, res.Value.Length - 5);
+                                currentRef = klogic.performFunction(name, currentRef, property);
+
 
                                 break;
 

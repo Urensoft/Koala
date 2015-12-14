@@ -25,20 +25,6 @@ namespace Koala_Edit
             InitializeComponent();
         }
         
-        private void button1_Click(object sender, EventArgs e)
-        {
-
-            try
-            {
-                compiler.execute(textBoxInput.Lines);
-            }
-            catch(Exception ex)
-            {
-                Console.WriteLine("Error on line "+Error.currentLineNumber+": " + ex.Message);
-            }
-            
-
-        }
 
         private void Form1_Load(object sender, EventArgs e)
         {
@@ -47,6 +33,31 @@ namespace Koala_Edit
             _writer = new TextBoxStreamWriter(textBoxOutput);
             // Redirect the out Console stream 
             Console.SetOut(_writer);
+        }
+
+
+        private void runCode(object sender, DoWorkEventArgs e)
+        {
+            try
+            {
+                compiler.execute(textBoxInput.Lines);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error on line " + Error.currentLineNumber + ": " + ex.Message);
+            }
+        }
+
+        private void startBackgroundWorker(object sender, EventArgs e)
+        {
+            backgroundWorker1.RunWorkerAsync();
+
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            this.progressBar1.Value = compiler.klogic.taskProgress;
+            this.statusLabel.Text   = compiler.currentTask;
         }
     }
     public class TextBoxStreamWriter : TextWriter

@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Koala Edit", "Koala Edit\Koala Edit.csproj", "{F4796C35-C332-4B36-AE26-63A0C705C924}"
+	ProjectSection(ProjectDependencies) = postProject
+		{571230E6-5517-465F-A819-873213EEDC1F} = {571230E6-5517-465F-A819-873213EEDC1F}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Koala", "Koala Framework\Koala.csproj", "{571230E6-5517-465F-A819-873213EEDC1F}"
 EndProject

@@ -13,7 +13,11 @@ namespace Koala
     public class Logic
     {
 
-        public Dictionary<string, kData> memory = new Dictionary<string, kData>();
+        public Dictionary<string, object> privateMemory     = new Dictionary<string, object>();
+        public Dictionary<string, kData> memory             = new Dictionary<string, kData>();
+        public Dictionary<string, kFunction> functionList = new Dictionary<string, kFunction>();
+
+        public int taskProgress = 0;
 
         string[] inputs = new string[]
         {
@@ -21,18 +25,36 @@ namespace Koala
             "string"
         };
 
+        public List<Regex> operatorList = new List<Regex>() {
+
+            new Regex(@"\([^\(\)]+\)"),  
+            new Regex(@"[a-zA-Z0-9\.]+\^[a-zA-Z0-9\.]+"),
+            new Regex(@"[a-zA-Z0-9\.]+\/[a-zA-Z0-9\.]+"),
+            new Regex(@"[a-zA-Z0-9\.]+\*[a-zA-Z0-9\.]+"),
+            new Regex(@"[a-zA-Z0-9\.]+\%[a-zA-Z0-9\.]+"),
+            new Regex(@"[a-zA-Z0-9\.]+\+[a-zA-Z0-9\.]+"),
+            new Regex(@"[a-zA-Z0-9\.]+\-[a-zA-Z0-9\.]+"),
+
+        };
+
+
+
+
         public Dictionary<string, Regex> parseList = new Dictionary<string, Regex>()
         {
+            {   "withStatement"     , new Regex(@"with .+\,",RegexOptions.IgnoreCase)                                                   },
+            {   "whichStatement"      , new Regex(@"which (are|is): .+(\,|\.)",RegexOptions.IgnoreCase)    },
+
             {   "loadStatement"     , new Regex("load the .+ found (in|at) \".+\"(\\,|\\.)",RegexOptions.IgnoreCase)                    },
-            {   "storeStatement"    , new Regex(@"store (this|these|them|those) as .+(\,|\.)",RegexOptions.IgnoreCase)                },
-            {   "repeatStatement"   , new Regex(@"repeat \d+ (time|times)(\,|\.)",RegexOptions.IgnoreCase)                            },
-            {   "withStatement"     , new Regex(@"with .+\,",RegexOptions.IgnoreCase)                                                },
-            {   "printStatement"    , new Regex(@"print out .+\,",RegexOptions.IgnoreCase)                                           },
-            {   "createStatement"   , new Regex(@"create (the|an|a) (integer|number|string|variable) ,",RegexOptions.IgnoreCase)    },
+            {   "storeStatement"    , new Regex(@"store (this|these|them|those) as .+(\,|\.)",RegexOptions.IgnoreCase)                  },
+            {   "repeatStatement"   , new Regex(@"repeat \d+ (time|times)(\,|\.)",RegexOptions.IgnoreCase)                              },
+            {   "printStatement"    , new Regex(@"print out .+\,",RegexOptions.IgnoreCase)                                              },
+            {   "createStatement"   , new Regex(@"create (the|an|a) (integer|number|string|variable) ,",RegexOptions.IgnoreCase)        },
             {   "saveStatement"     , new Regex("save .+ to \".+\"(\\,|\\.)",RegexOptions.IgnoreCase)                                   },
+            {   "performStatement"  , new Regex(@"(perform|execute|run) the function [^ ]+ on [^ ]+(\,|\.)",RegexOptions.IgnoreCase)                                   },
+
 
             //image
-            {   "whichStatement"      , new Regex(@"which (are|is): .+(\,|\.)",RegexOptions.IgnoreCase)    },
             {   "getStatement"      , new Regex(@"get the .+(\,|\.)",RegexOptions.IgnoreCase)    },
 
         };
@@ -56,6 +78,7 @@ namespace Koala
             FileAttributes attr = System.IO.File.GetAttributes(obj.location);
             if (attr.HasFlag(FileAttributes.Directory))
             {
+                
 
             }
             else
@@ -70,6 +93,37 @@ namespace Koala
             }
         }
 
+        public void scanForFunctions(string[] input)
+        {
+            string allData = String.Join("\n", input);
+
+            Regex definitions = new Regex(@"(define the function [^,.]+ as:)(([ \n])*(f\([^,]+,))+", RegexOptions.IgnoreCase);
+            MatchCollection m = definitions.Matches(allData);
+
+            foreach(Match match in m)
+            {
+                int index       = match.Value.IndexOf(':');
+                string fname    = Regex.Replace(match.Value.Substring(0, index+1), @"(define the function )|( as:)",  "", RegexOptions.IgnoreCase);
+
+                string funcValues           = match.Value.Substring(index, match.Value.Length - index);
+                MatchCollection funcs       = Regex.Matches(funcValues, @"((f\([^,]+,))+");
+
+                kFunction item = new kFunction();
+
+                foreach ( Match f in funcs)
+                {
+                    item.expressions.Add(f.Value);
+                }
+                functionList[fname] = item;
+
+            }
+
+
+
+
+
+
+        }
         public kData handleInputVariable(string i)
         {
             long iValue         = 0;
@@ -138,24 +192,70 @@ namespace Koala
 
         public string[] splice(string a)
         {
-
-
             Regex r = new Regex(@"(and)|\,|\&", RegexOptions.IgnoreCase);
 
             return r.Split(a);
+        }
 
+       
+        public string evaluateExpression(string expression)
+        {
+            expression          = expression.Replace(" ", "").Replace(",", "");
+            string output       = ""; 
 
+            for(int r = 0; r<operatorList.Count; r++)
+            {
+                Regex rx            = operatorList[r];
+                Match m             = rx.Match(expression);
+
+                while (m.Success)
+                {
+                    switch (r)
+                    {
+                        case 0:             //0 brackets
+                            output = evaluateExpression(m.Value.Replace("(", "").Replace(")", ""));
+                            break;
+                        case 1:             //1 orders
+                            output = ALU.Power(DataTypes.Convert.convertStringsToValues(m.Value.Split('^'),     ref memory, ref privateMemory)).ToString();
+                            break;
+                        case 2:             //2 division
+                            output = ALU.Divide(DataTypes.Convert.convertStringsToValues(m.Value.Split('/'),    ref memory, ref privateMemory)).ToString();
+                            break;
+                        case 3:             //3 multiplication
+                            output = ALU.Multiply(DataTypes.Convert.convertStringsToValues(m.Value.Split('*'),  ref memory, ref privateMemory)).ToString();
+                            break;
+                        case 4:             //4 modulo
+                            output = ALU.Modulo(DataTypes.Convert.convertStringsToValues(m.Value.Split('%'),    ref memory, ref privateMemory)).ToString();
+                            break;
+                        case 5:             //5 addition
+                            output = ALU.Add(DataTypes.Convert.convertStringsToValues(m.Value.Split('+'),       ref memory, ref privateMemory)).ToString();
+                            break;
+                        case 6:             //6 subtraction
+                            output = ALU.Subtract(DataTypes.Convert.convertStringsToValues(m.Value.Split('-'),  ref memory, ref privateMemory)).ToString();
+                            break;
+                    }
+                    if (!String.IsNullOrEmpty(output))
+                    {
+                        expression = expression.Replace(m.Value, output);
+                        double testOut;
+                        if (!double.TryParse(output, out testOut)) output = "(" + output + ")";
+
+                    }
+                    m = rx.Match(expression);
+                }
+
+            }
+
+            return expression;
         }
 
         public bool valuePassesQualifier(Number value)
         {
             bool logicalAnd = true;
 
-
             if (qualifiers.Count == 0) return true;
             else
             {
-
                 List<bool> results = new List<bool>();
 
                 foreach (Qualifier q in qualifiers)
@@ -171,37 +271,30 @@ namespace Koala
                             result  = value.isLessThan(q.var2);
                             break;
 
-
                         case "=":
                             result  = value.isEqualTo(q.var2);
                             break;
-
-
                             /*case "<=":
                                 return value.isEqualTo(q.var2);
                             case ">=":
                                 break;*/
-
                     }
 
                     if (logicalAnd && result == false) return false;
                     else results.Add(result);
-
                 }
 
                 if (results.Contains(true))  return true;
                 else                         return false;
-
             }
         }
 
         public kData getThe(string property, kData obj, bool evaluate)
         {
-
             switch (property)
             {
                 case "pixels":
-                    return getThePixels(obj);
+                    return getThePixels(obj,null);
                     break;
 
                 case "bytes":
@@ -222,17 +315,14 @@ namespace Koala
                 case "rows":
 
                     return getTheRow(obj);
-
-
             }
-
 
             Koala.Error.raiseException("Unknown property " + property);
             return null;
 
         }
 
-        public kData getThePixels(kData obj)
+        public kData getThePixels(kData obj, kFunction func)
         {
 
             Bitmap bmp = new Bitmap(new MemoryStream(obj.bytes));
@@ -240,15 +330,46 @@ namespace Koala
 
             for (int y = 0; y < bmp.Height; y++)
             {
+                taskProgress = (int)(((float)y / bmp.Height)*100.0);
                 for (int x = 0; x < bmp.Width; x++)
                 {
                     Color pix = bmp.GetPixel(x, y);
-                    bool a = valuePassesQualifier(new Number((long)pix.R));
-                    bool b = valuePassesQualifier(new Number((long)pix.G));
-                    bool c = valuePassesQualifier(new Number((long)pix.B));
 
-                    if (a && b && c) outBmp.SetPixel(x, y, pix);
-                    else outBmp.SetPixel(x, y, Color.Black);
+
+                    if (func == null)
+                    {
+                        bool a = valuePassesQualifier(new Number((long)pix.R));
+                        bool b = valuePassesQualifier(new Number((long)pix.G));
+                        bool c = valuePassesQualifier(new Number((long)pix.B));
+
+                        if (a && b && c) outBmp.SetPixel(x, y, pix);
+                        else outBmp.SetPixel(x, y, Color.Black);
+                    }
+                    else
+                    {
+
+                        privateMemory["r"] = (long)pix.R;
+                        privateMemory["g"] = (long)pix.G;
+                        privateMemory["b"] = (long)pix.B;
+                        privateMemory["a"] = (long)pix.A;
+
+                        foreach (string e in func.expressions)
+                        {
+                            string[] values     = e.Split('=');
+                            string result       = evaluateExpression(values[1]);
+                            string name         = Regex.Replace(values[0], @"f\(|\)","", RegexOptions.IgnoreCase).ToLower();
+                            privateMemory[name] = DataTypes.Convert.stringToObject( result );
+                        }
+                        long r = (long)privateMemory["r"];
+                        long g = (long)privateMemory["g"];
+                        long b = (long)privateMemory["b"];
+                        long a = (long)privateMemory["a"];
+
+
+                        outBmp.SetPixel(x, y, Color.FromArgb((int)a,(int)r,(int)g,(int)b));
+
+                    }
+
                 }
             }
 
@@ -282,20 +403,42 @@ namespace Koala
             return output;
         }
 
+        public kData performFunction(string functionName, kData target, string properties)
+        {
+            kData result = null;
+            if (functionList.ContainsKey(functionName))
+            {
+                kFunction f = functionList[functionName];
+
+                switch (properties)
+                {
+                    case "pixels":
+                        return getThePixels(target, f);
+                        break;
+
+                }
+
+                foreach (string e in f.expressions)
+                {
+                }
+            }
+            else
+            {
+                Koala.Error.raiseException("call to an undefined function: " + functionName);
+            }
+            return result;
+            
+        }
 
 
         public void handleExpression(string expression)
         {
-
             string[] operations = Regex.Split(expression, @"(,|( and ))");
 
             foreach (string a in operations)
             {
 
-
             }
-
-
         }
 
         public void storeObjectAsString(DataTypes.kData obj, string name)
@@ -433,4 +576,134 @@ namespace Koala
 
 
     }
+
+    public static class ALU
+    {
+       /* public bool isNumeric(string n)
+        {
+            if (n.Contains('.'))
+            {
+                double val;
+                return double.TryParse(n, out val);
+            }
+            else
+            {
+                long val;
+                return long.TryParse(n, out val);
+            }
+
+        }*/
+
+        public static object Add(object[] v)
+        {
+            object valueA = v[0];
+            object valueB = v[1];
+
+            Type a = valueA.GetType();
+            if (a == typeof(double))
+            {
+                if(valueB.GetType() == a)   return (double)valueA + (double)valueB;     // double double
+                else                        return (double)valueA + (long)valueB;       // double long
+            }
+            else
+            {
+                if (valueB.GetType() == a)  return (long)valueA + (long)valueB;         // long long
+                else                        return (long)valueA + (double)valueB;       // long double
+            }                                               
+
+        }
+
+        public static object Subtract(object[] v)
+        {
+            object valueA = v[0];
+            object valueB = v[1];
+
+            Type a = valueA.GetType();
+            if (a == typeof(double))
+            {
+                if ( valueB.GetType() == a)     return (double)valueA - (double)valueB;     // double double
+                else                            return (double)valueA - (long)valueB;       // double long
+            }
+            else
+            {
+                if (valueB.GetType() == a)      return (long)valueA - (long)valueB;         // long long
+                else                            return (long)valueA - (double)valueB;       // long double
+            }
+
+
+
+        }
+        public static object Multiply(object[] v)
+        {
+            object valueA = v[0];
+            object valueB = v[1];
+
+            Type a = valueA.GetType();
+            if (a == typeof(double))
+            { 
+                if (valueB.GetType() == a)      return (double)valueA * (double)valueB;     // double double
+                else                            return (double)valueA * (long)valueB;       // double long
+            }
+            else
+            {
+                if (valueB.GetType() == a)      return (long)valueA * (long)valueB;         // long long
+                else                            return (long)valueA * (double)valueB;       // long double
+            }
+
+
+        }
+        public static object Divide(object[] v)
+        {
+            object valueA = v[0];
+            object valueB = v[1];
+
+            Type a = valueA.GetType();
+            if (a == typeof(double))
+            {
+                if (valueB.GetType() == a)   return (double)valueA / (double)valueB;     // double double
+                else                         return (double)valueA / (long)valueB;       // double long
+            }
+            else
+            {
+                if (valueB.GetType() == a)  return (long)valueA / (long)valueB;         // long long
+                else                        return (long)valueA / (double)valueB;       // long double
+            }
+
+        }
+        public static object Modulo(object[] v)
+        {
+            object valueA = v[0];
+            object valueB = v[1];
+
+            Type a = valueA.GetType();
+            if (a == typeof(double))
+            { 
+                if (a == typeof(double) && valueB.GetType() == a)   return (double)valueA % (double)valueB;     // double double
+                else                                                return (double)valueA % (long)valueB;       // double long
+            }
+            else
+            {
+                if (a == typeof(long) && valueB.GetType() == a)     return (long)valueA % (long)valueB;         // long long
+                else                                                return (long)valueA % (double)valueB;       // long double
+            }
+        }
+           
+        public static object Power(object[] v)
+        {
+            object valueA = v[0];
+            object valueB = v[1];
+            Type a = valueA.GetType();
+            if (a == typeof(double))
+            {
+                if (valueB.GetType() == a)      return Math.Pow( (double)valueA , (double)valueB);     // double double
+                else                            return Math.Pow( (double)valueA , (long)valueB);       // double long
+            }
+            else
+            {
+                if (valueB.GetType() == a)      return Math.Pow( (long)valueA , (long)valueB );         // long long
+                else                            return Math.Pow( (long)valueA , (double)valueB );       // long double
+            }
+        }
+    }
+
 }
