@@ -53,6 +53,7 @@
             // 
             // textBoxInput
             // 
+            this.textBoxInput.AllowDrop = true;
             this.textBoxInput.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.textBoxInput.Location = new System.Drawing.Point(12, 52);
             this.textBoxInput.Multiline = true;
@@ -60,6 +61,8 @@
             this.textBoxInput.Size = new System.Drawing.Size(655, 235);
             this.textBoxInput.TabIndex = 0;
             this.textBoxInput.Text = resources.GetString("textBoxInput.Text");
+            this.textBoxInput.DragDrop += new System.Windows.Forms.DragEventHandler(this.textBoxInput_DragDrop);
+            this.textBoxInput.DragEnter += new System.Windows.Forms.DragEventHandler(this.textBoxInput_DragEnter);
             // 
             // textBoxOutput
             // 

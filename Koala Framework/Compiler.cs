@@ -10,9 +10,9 @@ namespace Koala
     public class Compiler
     {
 
-        public Koala.Logic klogic               = new Koala.Logic();
-        private Queue<Task>     runQueue = new Queue<Task>();
-        private Stack<DataTypes.kData> varRefStack = new Stack<DataTypes.kData>();
+        public Koala.Logic klogic                   = new Koala.Logic();
+        private Queue<Task>     runQueue            = new Queue<Task>();
+        private Stack<DataTypes.kData> varRefStack  = new Stack<DataTypes.kData>();
         private DataTypes.kData currentRef = null;
 
         public string currentTask = "";

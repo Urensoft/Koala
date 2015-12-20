@@ -380,7 +380,7 @@ namespace Koala
                         {
                             string[] values     = e.Split('=');
                             string result       = evaluateExpression(values[1]);
-                            string name         = Regex.Replace(values[0], @"f\(|\)","", RegexOptions.IgnoreCase).ToLower();
+                            string name         = Regex.Replace(values[0], @"f\(|\) *","", RegexOptions.IgnoreCase).ToLower();
                             privateMemory[name] = DataTypes.Convert.stringToObject( result );
                         }
                         long r = (long)privateMemory["r"];

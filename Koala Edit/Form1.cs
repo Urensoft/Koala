@@ -59,6 +59,27 @@ namespace Koala_Edit
             this.progressBar1.Value = compiler.klogic.taskProgress;
             this.statusLabel.Text   = compiler.currentTask;
         }
+
+        private void textBoxInput_DragDrop(object sender, DragEventArgs e)
+        {
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            if(files.Count() > 1)
+            {
+
+            }
+            else
+            {
+                var selectionIndex = textBoxInput.SelectionStart;
+                textBoxInput.Text = textBoxInput.Text.Insert(selectionIndex, "\""+files[0]+"\"");
+                textBoxInput.SelectionStart = selectionIndex + files[0].Length+2;
+            }
+        }
+
+        private void textBoxInput_DragEnter(object sender, DragEventArgs e)
+        {
+                e.Effect = DragDropEffects.Copy;
+            
+        }
     }
     public class TextBoxStreamWriter : TextWriter
     {
