@@ -12,10 +12,18 @@ namespace Koala
 {
     public class Logic
     {
+        public DataTypes.Convert converter;
+
+        public Logic()
+        {
+            converter = new DataTypes.Convert(ref memory, ref privateMemory);
+
+        }
 
         public Dictionary<string, object> privateMemory     = new Dictionary<string, object>();
         public Dictionary<string, kData> memory             = new Dictionary<string, kData>();
         public Dictionary<string, kFunction> functionList = new Dictionary<string, kFunction>();
+
 
         public int taskProgress = 0;
 
@@ -27,13 +35,14 @@ namespace Koala
 
         public List<Regex> operatorList = new List<Regex>() {
 
-            new Regex(@"\([^\(\)]+\)"),  
+            new Regex(@"\([^\(\)]+\)"),
             new Regex(@"[a-zA-Z0-9\.]+\^[a-zA-Z0-9\.]+"),
             new Regex(@"[a-zA-Z0-9\.]+\/[a-zA-Z0-9\.]+"),
             new Regex(@"[a-zA-Z0-9\.]+\*[a-zA-Z0-9\.]+"),
             new Regex(@"[a-zA-Z0-9\.]+\%[a-zA-Z0-9\.]+"),
             new Regex(@"[a-zA-Z0-9\.]+\+[a-zA-Z0-9\.]+"),
             new Regex(@"[a-zA-Z0-9\.]+\-[a-zA-Z0-9\.]+"),
+
 
         };
 
@@ -197,6 +206,7 @@ namespace Koala
             return r.Split(a);
         }
 
+
        
         public string evaluateExpression(string expression)
         {
@@ -216,22 +226,22 @@ namespace Koala
                             output = evaluateExpression(m.Value.Replace("(", "").Replace(")", ""));
                             break;
                         case 1:             //1 orders
-                            output = ALU.Power(DataTypes.Convert.convertStringsToValues(m.Value.Split('^'),     ref memory, ref privateMemory)).ToString();
+                            output = ALU.Power(DataTypes.Convert.convertStringsToValues(m.Value.Split('^'))     ).ToString();
                             break;
                         case 2:             //2 division
-                            output = ALU.Divide(DataTypes.Convert.convertStringsToValues(m.Value.Split('/'),    ref memory, ref privateMemory)).ToString();
+                            output = ALU.Divide(DataTypes.Convert.convertStringsToValues(m.Value.Split('/'))    ).ToString();
                             break;
                         case 3:             //3 multiplication
-                            output = ALU.Multiply(DataTypes.Convert.convertStringsToValues(m.Value.Split('*'),  ref memory, ref privateMemory)).ToString();
+                            output = ALU.Multiply(DataTypes.Convert.convertStringsToValues(m.Value.Split('*'))  ).ToString();
                             break;
                         case 4:             //4 modulo
-                            output = ALU.Modulo(DataTypes.Convert.convertStringsToValues(m.Value.Split('%'),    ref memory, ref privateMemory)).ToString();
+                            output = ALU.Modulo(DataTypes.Convert.convertStringsToValues(m.Value.Split('%'))    ).ToString();
                             break;
                         case 5:             //5 addition
-                            output = ALU.Add(DataTypes.Convert.convertStringsToValues(m.Value.Split('+'),       ref memory, ref privateMemory)).ToString();
+                            output = ALU.Add(DataTypes.Convert.convertStringsToValues(m.Value.Split('+'))       ).ToString();
                             break;
                         case 6:             //6 subtraction
-                            output = ALU.Subtract(DataTypes.Convert.convertStringsToValues(m.Value.Split('-'),  ref memory, ref privateMemory)).ToString();
+                            output = ALU.Subtract(DataTypes.Convert.convertStringsToValues(m.Value.Split('-'))  ).ToString();
                             break;
                     }
                     if (!String.IsNullOrEmpty(output))
@@ -245,6 +255,19 @@ namespace Koala
                 }
 
             }
+            //check for pronumeral
+
+            MatchCollection mc  = Regex.Matches(expression, @"[a-zA-Z0-9_]+");
+            
+            foreach ( Match m in mc)
+            {
+                object a =DataTypes.Convert.stringToObject(m.Value);
+                if(a != null)
+                {
+                    expression = expression.Replace( m.Value,a.ToString() );
+                }
+            }
+
 
             return expression;
         }

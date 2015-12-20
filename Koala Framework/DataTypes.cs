@@ -15,6 +15,16 @@ namespace Koala
 
         public class Convert
         {
+            public static Dictionary<string, object> privateMemory = new Dictionary<string, object>();
+            public static Dictionary<string, kData> memory = new Dictionary<string, kData>();
+
+            public Convert(ref Dictionary<string, kData> mem, ref Dictionary<string, object> pmem)
+            {
+                privateMemory   = pmem;
+                memory          = mem;
+
+            }
+   
 
             public static string objectToString(kData obj)
             {
@@ -70,22 +80,32 @@ namespace Koala
             {
                 double retDouble;
                 long retLong;
-                bool found1 = false;
+                bool found = false;
 
                 object[] values = new object[2];
 
                 if (a.Contains('.'))
                 {
-                    found1 = double.TryParse(a, System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retDouble);
-                    if (found1) return retDouble;
-                    else        return null;
+                    found = double.TryParse(a, System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retDouble);
+                    if (found) return retDouble;
                 }
                 else
                 {
-                    found1 = long.TryParse(a, System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retLong);
-                    if (found1) return retLong;
-                    else        return null;
+                    found = long.TryParse(a, System.Globalization.NumberStyles.Any, System.Globalization.NumberFormatInfo.InvariantInfo, out retLong);
+                    if (found) return retLong;
                 }
+
+                object outObj;
+                if (privateMemory.TryGetValue(a, out outObj))
+                {
+                    return outObj;
+                }
+                else
+                {
+                    Koala.Error.raiseException("Unknown value " + a);
+                    return null;
+                }
+
             }
 
             public static string stringToPath(string a)
@@ -102,7 +122,7 @@ namespace Koala
             }
 
 
-            public static object[] convertStringsToValues(string[] s, ref Dictionary<string,kData> mem, ref Dictionary<string,object> pmem)
+            public static object[] convertStringsToValues(string[] s)
             {
                 object[] values = new object[2];
 
@@ -115,11 +135,11 @@ namespace Koala
                 // CHECK FOR PRONUMERALS 
                 if (values[0] == null)
                 {
-                    if(pmem.TryGetValue(s[0],out outObj))
+                    if(privateMemory.TryGetValue(s[0],out outObj))
                     {
                         values[0] = outObj;
                     }
-                    else if(mem.TryGetValue(s[0], out res))
+                    else if(memory.TryGetValue(s[0], out res))
                     {
 
                     }
@@ -131,11 +151,11 @@ namespace Koala
 
                 if (values[1] == null)
                 {
-                    if (pmem.TryGetValue(s[1], out outObj))
+                    if (privateMemory.TryGetValue(s[1], out outObj))
                     {
                         values[1] = outObj;
                     }
-                    else if (mem.TryGetValue(s[1], out res))
+                    else if (memory.TryGetValue(s[1], out res))
                     {
 
                     }
