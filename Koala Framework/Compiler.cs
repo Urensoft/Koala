@@ -83,18 +83,40 @@ namespace Koala
 
                                 param2  = DataTypes.Convert.stringToPath( values[3] ); 
                                 if(param1 == "this")    klogic.saveToFile(param2, currentRef);
-                                else                    klogic.saveToFile(param2, klogic.memory[param2]);
+                                else                    klogic.saveToFile(param2, klogic.memory[param1]);
 
                                 break;
                             case "performStatement":
                                 string name     = values[3];
-                                currentTask = "Performing function " + name;
+                                currentTask     = String.Format( "Performing function \"{0}\"" , name);
 
                                 string property = "";
-                                Match res       = new Regex(" on [^ ]+,",RegexOptions.IgnoreCase).Match(m.Value);
-                                if(res.Success) property = res.Value.Substring(4, res.Value.Length - 5);
-                                currentRef = klogic.performFunction(name, currentRef, property);
+                                string[] ps     = Regex.Split(m.Value, " on ", RegexOptions.IgnoreCase);
 
+                                string[] params2    = ps[1].Split(' ');
+                                property            = Regex.Replace(params2[0],@"\:|\,|\.","").ToLower();
+
+                                if(property == "range")
+                                {
+                                    string a = params2[1];
+                                    string b = params2[3];
+                                    DataTypes.Range range = new DataTypes.Range(a, b.Substring(0,b.Length -1));
+                                    currentRef = klogic.performFunction(name, currentRef, property,range);
+                                }
+                                else
+                                {
+                                    currentRef = klogic.performFunction(name, currentRef, property, null);
+
+                                }
+
+
+
+                                break;
+
+                            case "createStatement":
+
+                                param1 = values[3].Substring(0,values[3].Length -1).ToLower();
+                                currentRef = klogic.createTheObject(param1);
 
                                 break;
 

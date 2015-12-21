@@ -12,6 +12,38 @@ namespace Koala
 {
     namespace DataTypes
     {
+        public class Statements
+        {
+            public static Dictionary<string, Color> highlightReference = new Dictionary<string, Color>()
+            {
+                { "[filetype]",     Color.Blue },
+                { "[datatype]",     Color.Blue },
+                { "[property]",     Color.Green }
+                ,
+                { "[qualifier]",    Color.Blue },
+                { "[function]",     Color.Orange },
+
+                { "[path]",         Color.Red },
+                { "[variable]",     Color.Red },
+
+            };
+
+            public static List<string> statements = new List<string>()
+            {
+                "Create a new [datatype],",
+                "Get the [property] which are: [qualifier]",
+                "Load the [filetype] found in [path],",
+                "Perform the function [function] on [property],",
+                "Print out [variable],",
+                "Print out [property] of [variable],",
+                "Save [variable] to [path],",
+                "Store this as [variable],",
+
+            };
+
+
+        }
+
 
         public class Convert
         {
@@ -33,17 +65,38 @@ namespace Koala
                 foreach (FieldInfo f in obj.GetType().GetFields().ToList())
                 {
                     object val = f.GetValue(obj);
-                    results += String.Format("{0}={1},\n", f.Name, val);
-                    if (f.FieldType.IsArray)
+                    if(val == null)
                     {
-                        if (f.FieldType == typeof(byte[]))
-                        {
-                            byte[] b = (byte[])val;
-                            results += String.Format("{0}={1},\n", f.Name + ".length", b.Length);
-                        }
+
 
                     }
+                    else
+                    {
+                        if (f.FieldType.IsArray)
+                        {
+                            if (f.FieldType == typeof(byte[]))
+                            {
+                                byte[] b = (byte[])val;
+                                results += String.Format("\t{0}={1},\n", f.Name + ".length", b.Length);
+                            }
+                        }
+                        else if(f.FieldType == typeof(List<object>))
+                        {
+                            results += "\t"+f.Name + "{\n";
 
+                            List<object> li = (List<object>)val;
+                            foreach (object o in li)
+                            {
+                                results += String.Format("\t\t{0},\n", o);
+                            }
+                            results +="\t}\n";
+                            results += String.Format("\t{0}={1},\n", f.Name + ".length", li.Count);
+                        }
+                        else
+                        {
+                            results += String.Format("\t{0}={1},\n", f.Name, val);
+                        }
+                    }
 
                     // do stuff here
                 }
@@ -274,6 +327,29 @@ namespace Koala
 
 
         }
+        public class Range : kData
+        {
+            public Range(string a, string b)
+            {
+                object[] vars = DataTypes.Convert.convertStringsToValues(new string[] { a, b });
+                start   = (long)vars[0];
+                end     = (long)vars[1];
+            }
+            public long start;
+            public long end;
+
+        }
+        public class List : kData
+        {
+            public List<object> items;
+
+            public List()
+            {
+                items = new List<object>();
+            }
+
+
+        }
 
         public class Number : kData
         {
@@ -284,7 +360,7 @@ namespace Koala
                 Value = d;
             }
 
-            object Value;
+            public object Value;
 
 
             public bool isGreaterThan(Number num2)

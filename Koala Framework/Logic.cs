@@ -52,19 +52,19 @@ namespace Koala
         public Dictionary<string, Regex> parseList = new Dictionary<string, Regex>()
         {
             {   "withStatement"     , new Regex(@"with .+\,",RegexOptions.IgnoreCase)                                                   },
-            {   "whichStatement"      , new Regex(@"which (are|is): .+(\,|\.)",RegexOptions.IgnoreCase)    },
+            {   "whichStatement"    , new Regex(@"which (are|is): .+(\,|\.)",RegexOptions.IgnoreCase)    },
 
             {   "loadStatement"     , new Regex("load the .+ found (in|at) \".+\"(\\,|\\.)",RegexOptions.IgnoreCase)                    },
-            {   "storeStatement"    , new Regex(@"store (this|these|them|those) as .+(\,|\.)",RegexOptions.IgnoreCase)                  },
             {   "repeatStatement"   , new Regex(@"repeat \d+ (time|times)(\,|\.)",RegexOptions.IgnoreCase)                              },
-            {   "printStatement"    , new Regex(@"print out .+\,",RegexOptions.IgnoreCase)                                              },
-            {   "createStatement"   , new Regex(@"create (the|an|a) (integer|number|string|variable) ,",RegexOptions.IgnoreCase)        },
+            {   "printStatement"    , new Regex(@"print out .+(\,|\.)",RegexOptions.IgnoreCase)                                              },
+            {   "createStatement"   , new Regex(@"create (the|an|a)( new)* (integer|number|string|variable|list),",RegexOptions.IgnoreCase)        },
             {   "saveStatement"     , new Regex("save .+ to \".+\"(\\,|\\.)",RegexOptions.IgnoreCase)                                   },
-            {   "performStatement"  , new Regex(@"(perform|execute|run) the function [^ ]+ on [^ ]+(\,|\.)",RegexOptions.IgnoreCase)                                   },
+            {   "performStatement"  , new Regex(@"(perform|execute|run) the function [^ ]+ on ([^ ]+|range: \d+ to \d+)(\,|\.)",RegexOptions.IgnoreCase)    },
 
 
             //image
             {   "getStatement"      , new Regex(@"get the .+(\,|\.)",RegexOptions.IgnoreCase)    },
+            {   "storeStatement"    , new Regex(@"store (this|these|them|those) as .+(\,|\.)",RegexOptions.IgnoreCase)                  },
 
         };
 
@@ -206,6 +206,24 @@ namespace Koala
             return r.Split(a);
         }
 
+
+        public kData createTheObject(string obj)
+        {
+            kData output;
+            switch (obj)
+            {
+                case "list":
+
+                    return new DataTypes.List();
+
+                break;
+
+
+            }
+
+            Koala.Error.raiseException("Failed to create " + obj);
+            return null;
+        }
 
        
         public string evaluateExpression(string expression)
@@ -426,23 +444,31 @@ namespace Koala
             return output;
         }
 
-        public kData performFunction(string functionName, kData target, string properties)
+        public kData performFunction(string functionName, kData target, string property, DataTypes.Range range)
         {
             kData result = null;
             if (functionList.ContainsKey(functionName))
             {
                 kFunction f = functionList[functionName];
 
-                switch (properties)
+                switch (property)
                 {
                     case "pixels":
                         return getThePixels(target, f);
                         break;
 
-                }
+                    case "range":
+                        DataTypes.List output = new DataTypes.List();
+                        for(long i = range.start; i<range.end; i++)
+                        {
+                            foreach (string ex in f.expressions)
+                            {
+                                output.items.Add( handleExpression(ex,new DataTypes.Number(i)));
+                            }
+                        }
 
-                foreach (string e in f.expressions)
-                {
+                        return output;
+                        break;
                 }
             }
             else
@@ -454,19 +480,25 @@ namespace Koala
         }
 
 
-        public void handleExpression(string expression)
+        public string handleExpression(string expression,DataTypes.Number optionalInput)
         {
-            string[] operations = Regex.Split(expression, @"(,|( and ))");
+            
+            //string[] operations = Regex.Split(expression, @"(,|( and ))");
+            string[] values     = expression.Split('=');
+            string name         = Regex.Replace(values[0], @"f\(|\) *", "", RegexOptions.IgnoreCase).ToLower();
 
-            foreach (string a in operations)
-            {
+            if (optionalInput != null) privateMemory[name] = optionalInput.Value;
 
-            }
+            string result       = evaluateExpression(values[1]);
+            return result;
+            //privateMemory[name] = DataTypes.Convert.stringToObject(result);
+
+
         }
 
         public void storeObjectAsString(DataTypes.kData obj, string name)
         {
-            memory[name] = obj;
+            memory["this"] = memory[name] = obj;
         }
 
         public void repeatTaskTimes(UInt64 times)
@@ -557,6 +589,17 @@ namespace Koala
             {
                 DataTypes.Image img = (DataTypes.Image)obj;
                 img.bmpRepresentation.Save(path);
+            }
+            else if(obj.GetType() == typeof(DataTypes.List) )
+            {
+                string output = "";
+                DataTypes.List list = (DataTypes.List)obj;
+                foreach(object a in list.items)
+                {
+                    output += String.Format("{0},\n", a);
+                }
+                System.IO.File.WriteAllText(path, output);
+
             }
             else
             {

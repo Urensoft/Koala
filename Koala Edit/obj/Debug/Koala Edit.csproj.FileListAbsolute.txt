@@ -11,3 +11,4 @@ Y:\_git\Koala\Koala Edit\obj\Debug\Koala_Edit.Properties.Resources.resources
 Y:\_git\Koala\Koala Edit\obj\Debug\Koala Edit.csproj.GenerateResource.Cache
 Y:\_git\Koala\Koala Edit\obj\Debug\Koala Edit.exe
 Y:\_git\Koala\Koala Edit\obj\Debug\Koala Edit.pdb
+Y:\_git\Koala\Koala Edit\obj\Debug\Koala_Edit.DonationForm.resources

@@ -30,7 +30,6 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            this.textBoxInput = new System.Windows.Forms.TextBox();
             this.textBoxOutput = new System.Windows.Forms.TextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -47,22 +46,14 @@
             this.progressBar1 = new System.Windows.Forms.ProgressBar();
             this.statusLabel = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.textBoxInput = new System.Windows.Forms.RichTextBox();
+            this.cMenuStatement = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.addToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statementsList = new System.Windows.Forms.ListBox();
             this.menuStrip1.SuspendLayout();
             this.toolStrip1.SuspendLayout();
+            this.cMenuStatement.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // textBoxInput
-            // 
-            this.textBoxInput.AllowDrop = true;
-            this.textBoxInput.Font = new System.Drawing.Font("Arial Narrow", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBoxInput.Location = new System.Drawing.Point(12, 52);
-            this.textBoxInput.Multiline = true;
-            this.textBoxInput.Name = "textBoxInput";
-            this.textBoxInput.Size = new System.Drawing.Size(655, 235);
-            this.textBoxInput.TabIndex = 0;
-            this.textBoxInput.Text = resources.GetString("textBoxInput.Text");
-            this.textBoxInput.DragDrop += new System.Windows.Forms.DragEventHandler(this.textBoxInput_DragDrop);
-            this.textBoxInput.DragEnter += new System.Windows.Forms.DragEventHandler(this.textBoxInput_DragEnter);
             // 
             // textBoxOutput
             // 
@@ -79,7 +70,7 @@
             this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(679, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(858, 24);
             this.menuStrip1.TabIndex = 4;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -104,6 +95,7 @@
             this.donateToUrensoftToolStripMenuItem.Name = "donateToUrensoftToolStripMenuItem";
             this.donateToUrensoftToolStripMenuItem.Size = new System.Drawing.Size(174, 22);
             this.donateToUrensoftToolStripMenuItem.Text = "Donate to Urensoft";
+            this.donateToUrensoftToolStripMenuItem.Click += new System.EventHandler(this.donateToUrensoftToolStripMenuItem_Click);
             // 
             // toolStripSeparator1
             // 
@@ -125,7 +117,7 @@
             this.toolStripButtonRun});
             this.toolStrip1.Location = new System.Drawing.Point(0, 24);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(679, 25);
+            this.toolStrip1.Size = new System.Drawing.Size(858, 25);
             this.toolStrip1.TabIndex = 5;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -188,16 +180,52 @@
             this.timer1.Interval = 300;
             this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
+            // textBoxInput
+            // 
+            this.textBoxInput.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.textBoxInput.Location = new System.Drawing.Point(15, 52);
+            this.textBoxInput.Name = "textBoxInput";
+            this.textBoxInput.Size = new System.Drawing.Size(652, 235);
+            this.textBoxInput.TabIndex = 8;
+            this.textBoxInput.Text = "";
+            // 
+            // cMenuStatement
+            // 
+            this.cMenuStatement.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addToolStripMenuItem});
+            this.cMenuStatement.Name = "cMenuStatement";
+            this.cMenuStatement.Size = new System.Drawing.Size(97, 26);
+            // 
+            // addToolStripMenuItem
+            // 
+            this.addToolStripMenuItem.Name = "addToolStripMenuItem";
+            this.addToolStripMenuItem.Size = new System.Drawing.Size(96, 22);
+            this.addToolStripMenuItem.Text = "Add";
+            this.addToolStripMenuItem.Click += new System.EventHandler(this.addStatementClicked);
+            // 
+            // statementsList
+            // 
+            this.statementsList.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.statementsList.ContextMenuStrip = this.cMenuStatement;
+            this.statementsList.Font = new System.Drawing.Font("Tahoma", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.statementsList.FormattingEnabled = true;
+            this.statementsList.Location = new System.Drawing.Point(673, 52);
+            this.statementsList.Name = "statementsList";
+            this.statementsList.Size = new System.Drawing.Size(173, 238);
+            this.statementsList.TabIndex = 9;
+            this.statementsList.SelectedValueChanged += new System.EventHandler(this.statementsList_SelectedValueChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(679, 563);
+            this.ClientSize = new System.Drawing.Size(858, 563);
+            this.Controls.Add(this.statementsList);
+            this.Controls.Add(this.textBoxInput);
             this.Controls.Add(this.statusLabel);
             this.Controls.Add(this.progressBar1);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.textBoxOutput);
-            this.Controls.Add(this.textBoxInput);
             this.Controls.Add(this.menuStrip1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
@@ -208,14 +236,13 @@
             this.menuStrip1.PerformLayout();
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
+            this.cMenuStatement.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.TextBox textBoxInput;
         private System.Windows.Forms.TextBox textBoxOutput;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
@@ -232,6 +259,10 @@
         private System.Windows.Forms.ProgressBar progressBar1;
         private System.Windows.Forms.Label statusLabel;
         private System.Windows.Forms.Timer timer1;
+        private System.Windows.Forms.RichTextBox textBoxInput;
+        private System.Windows.Forms.ContextMenuStrip cMenuStatement;
+        private System.Windows.Forms.ToolStripMenuItem addToolStripMenuItem;
+        private System.Windows.Forms.ListBox statementsList;
     }
 }
 

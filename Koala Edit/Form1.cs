@@ -17,6 +17,7 @@ namespace Koala_Edit
 
     public partial class Form1 : Form
     {
+        public string[] code;
         public Koala.Compiler compiler = new Koala.Compiler();
         TextWriter _writer;
 
@@ -28,8 +29,11 @@ namespace Koala_Edit
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            
 
+            foreach(string s in Koala.DataTypes.Statements.statements)
+            {
+                statementsList.Items.Add(s);
+            }
             _writer = new TextBoxStreamWriter(textBoxOutput);
             // Redirect the out Console stream 
             Console.SetOut(_writer);
@@ -40,7 +44,7 @@ namespace Koala_Edit
         {
             try
             {
-                compiler.execute(textBoxInput.Lines);
+                compiler.execute(code);
             }
             catch (Exception ex)
             {
@@ -50,6 +54,7 @@ namespace Koala_Edit
 
         private void startBackgroundWorker(object sender, EventArgs e)
         {
+            code = textBoxInput.Lines;
             backgroundWorker1.RunWorkerAsync();
 
         }
@@ -69,8 +74,8 @@ namespace Koala_Edit
             }
             else
             {
-                var selectionIndex = textBoxInput.SelectionStart;
-                textBoxInput.Text = textBoxInput.Text.Insert(selectionIndex, "\""+files[0]+"\"");
+                var selectionIndex          = textBoxInput.SelectionStart;
+                textBoxInput.Text           = textBoxInput.Text.Insert(selectionIndex, "\""+files[0]+"\"");
                 textBoxInput.SelectionStart = selectionIndex + files[0].Length+2;
             }
         }
@@ -79,6 +84,24 @@ namespace Koala_Edit
         {
                 e.Effect = DragDropEffects.Copy;
             
+        }
+
+        public string selectedStatement;
+        private void addStatementClicked(object sender, EventArgs e)
+        {
+
+        }
+
+        private void statementsList_SelectedValueChanged(object sender, EventArgs e)
+        {
+           // selectedStatement = sender["Text"];
+        }
+
+        private void donateToUrensoftToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DonationForm df = new DonationForm();
+            df.Show();
+
         }
     }
     public class TextBoxStreamWriter : TextWriter
